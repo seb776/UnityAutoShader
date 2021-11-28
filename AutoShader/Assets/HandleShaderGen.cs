@@ -81,7 +81,7 @@ public class HandleShaderGen : MonoBehaviour
         material.SetVector("iSize", new Vector2(RenderTexture.width, RenderTexture.height));
         Graphics.Blit(null, RenderTexture, material);
 
-        SaveTexture($@"E:\OneDrive\Projects\Perso\Shaders\Records\Botz0rg_17_01_2021\{shaderName}.png", RenderTexture);
+        SaveTexture($@"E:\OneDrive\Projects\Perso\Shaders\Records\Botz0rg_22_08_2021\{shaderName}.png", RenderTexture);
 
         DestroyImmediate(material);
         DestroyImmediate(shader);
@@ -112,7 +112,7 @@ public class HandleShaderGen : MonoBehaviour
     {
         if (DoRender)
         {
-            for (int i = 0; i < 1000; ++i)
+            for (int i = 0; i < 3000; ++i)
             {
                 Render($"shader{i}");
             }
