@@ -12,7 +12,60 @@ public class ColorPalette
     public Color[] Shapes;
 }
 
-public class HandleShaderGen : MonoBehaviour
+public abstract class AShaderGen : MonoBehaviour
+{
+    public abstract void GenerateShaderCode(string outputPath, string shaderName);
+
+    public void Render(string name, string shaderfolder, string output, RenderTexture renderTo, Texture inputTex)
+    {
+        var shaderName = name+shaderfolder;
+        var shaderFolderPath = $"Assets/NewShaders/{shaderfolder}";
+        try
+        {
+            if (Directory.Exists(shaderFolderPath))
+                Directory.Delete(shaderFolderPath, true);
+            Directory.CreateDirectory(shaderFolderPath);
+        }
+        catch (Exception) { }
+        var assetShaderPath = $"{shaderFolderPath}/{shaderName}.shader";
+        GenerateShaderCode(assetShaderPath, shaderName);
+        UnityEditor.AssetDatabase.ImportAsset(assetShaderPath);
+        var shader = Shader.Find($"Unlit/{shaderName}");
+        var material = new Material(shader);
+        material.SetVector("iSize", new Vector2(renderTo.width, renderTo.height));
+        material.SetTexture("myTexture", inputTex);
+        Graphics.Blit(null, renderTo, material);
+
+        if (!Directory.Exists(output))
+            Directory.CreateDirectory(output);
+        SaveTexture($@"{output}\{shaderName}.png", renderTo);
+
+        DestroyImmediate(material);
+        DestroyImmediate(shader);
+    }
+
+    public void SaveTexture(string path, RenderTexture rt)
+    {
+        var tex = toTexture2D(rt);
+        byte[] bytes = tex.EncodeToPNG();
+
+        System.IO.File.WriteAllBytes(path, bytes);
+
+        DestroyImmediate(tex);
+    }
+    Texture2D toTexture2D(RenderTexture rTex)
+    {
+        Texture2D tex = new Texture2D(rTex.width, rTex.height, TextureFormat.RGB24, false);
+        RenderTexture.active = rTex;
+        tex.ReadPixels(new Rect(0, 0, rTex.width, rTex.height), 0, 0);
+        tex.Apply();
+        return tex;
+    }
+
+    public bool DoRender;
+}
+
+public class HandleShaderGen : AShaderGen
 {
     public ColorPalette[] Palettes;
     public RenderTexture RenderTexture;
@@ -24,7 +77,7 @@ public class HandleShaderGen : MonoBehaviour
 
     string _templateCode;
 
-    void GenerateShaderCode(string outputPath, string shaderName)
+    public override void GenerateShaderCode(string outputPath, string shaderName)
     {
         StringBuilder sb = new StringBuilder();
         var palette = Palettes[UnityEngine.Random.Range(0, Palettes.Length)];
@@ -70,51 +123,15 @@ public class HandleShaderGen : MonoBehaviour
         File.WriteAllText(outputPath, newText);
     }
 
-    private void Render(string name)
-    {
-        var shaderName = name;
-        var assetShaderPath = $"Assets/NewShaders/{shaderName}.shader";
-        GenerateShaderCode(assetShaderPath, shaderName);
-        UnityEditor.AssetDatabase.ImportAsset(assetShaderPath);
-        var shader = Shader.Find($"Unlit/{shaderName}");
-        var material = new Material(shader);
-        material.SetVector("iSize", new Vector2(RenderTexture.width, RenderTexture.height));
-        Graphics.Blit(null, RenderTexture, material);
-
-        SaveTexture($@"E:\OneDrive\Projects\Perso\Shaders\Records\Botz0rg_22_08_2021\{shaderName}.png", RenderTexture);
-
-        DestroyImmediate(material);
-        DestroyImmediate(shader);
-    }
-
-    public void SaveTexture(string path, RenderTexture rt)
-    {
-        var tex = toTexture2D(rt);
-        byte[] bytes = tex.EncodeToPNG();
-
-        System.IO.File.WriteAllBytes(path, bytes);
-
-        DestroyImmediate(tex);
-    }
-    Texture2D toTexture2D(RenderTexture rTex)
-    {
-        Texture2D tex = new Texture2D(rTex.width, rTex.height, TextureFormat.RGB24, false);
-        RenderTexture.active = rTex;
-        tex.ReadPixels(new Rect(0, 0, rTex.width, rTex.height), 0, 0);
-        tex.Apply();
-        return tex;
-    }
-
-    public bool DoRender;
 
     // Update is called once per frame
     void Update()
     {
         if (DoRender)
         {
-            for (int i = 0; i < 3000; ++i)
+            for (int i = 0; i < 100; ++i)
             {
-                Render($"shader{i}");
+                Render($"shader{i}", "flat2d", @"E:\OneDrive\Projects\Perso\Shaders\Records\Botz0rg_test\", RenderTexture, null);
             }
             DoRender = false;
         }
