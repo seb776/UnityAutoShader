@@ -87,7 +87,7 @@ public class MetaShadHeur : AShaderGen
             float posLim = 5.0f;
             sample.Position.x = UnityEngine.Random.Range(-posLim, posLim);
             sample.Position.y = UnityEngine.Random.Range(-posLim, posLim);
-            sample.Position.z = 0.0f;// UnityEngine.Random.Range(-posLim, posLim);
+            sample.Position.z = UnityEngine.Random.Range(0.0f, posLim);
 
             sample.Color.x = UnityEngine.Random.Range(0.0f, 1.0f);
             sample.Color.y = UnityEngine.Random.Range(0.0f, 1.0f);
@@ -99,25 +99,25 @@ public class MetaShadHeur : AShaderGen
     private IList<Sample> _mutate(IList<Sample> samples)
     {
         samples = samples.Clone();
-        int changes = 10;
+        int changes = 1;
         for (int i = 0; i < changes; ++i)
         {
             var sample = samples[UnityEngine.Random.Range(0, samples.Count)];
             var propertyChange = UnityEngine.Random.Range(0, 3);
-            if (propertyChange == 0)
+            //if (propertyChange == 0)
             {
                 sample.Color.x = UnityEngine.Random.Range(0.0f, 1.0f);
                 sample.Color.y = UnityEngine.Random.Range(0.0f, 1.0f);
                 sample.Color.z = UnityEngine.Random.Range(0.0f, 1.0f);
             }
-            if (propertyChange == 1)
+            //if (propertyChange == 1)
             {
                 float posLim = 5.0f;
                 sample.Position.x = UnityEngine.Random.Range(-posLim, posLim);
                 sample.Position.y = UnityEngine.Random.Range(-posLim, posLim);
-                sample.Position.z = 0.0f;// UnityEngine.Random.Range(-posLim, posLim);
+                sample.Position.z = UnityEngine.Random.Range(0.0f, posLim);
             }
-            if (propertyChange == 2)
+            //if (propertyChange == 2)
                 sample.Size = UnityEngine.Random.Range(0.1f, 2.0f);
         }
         return samples;
@@ -127,7 +127,7 @@ public class MetaShadHeur : AShaderGen
     {
         var outputImgPath = $@"C:\TMPImages\shader{i}METASHADHEUR.png";
         var compareImgPath = AssetDatabase.GetAssetPath(CompareImage);
-        string diffCmd = $"/C magick composite {compareImgPath} {outputImgPath} -compose Difference C:\\TMPImages\\difference.png";
+        string diffCmd = $"/C magick composite  {outputImgPath} {compareImgPath} -compose subtract C:\\TMPImages\\difference.png";
         var processDiff = new System.Diagnostics.Process();
         processDiff.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
         processDiff.StartInfo.CreateNoWindow = true;
