@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using UnityEngine;
@@ -16,21 +17,24 @@ public abstract class AShaderGen : MonoBehaviour
 {
     public abstract void GenerateShaderCode(string outputPath, string shaderName);
 
-    public void Render(string name, string shaderfolder, string output, RenderTexture renderTo, Texture inputTex)
+    public void Render(string name, string shaderfolder, string output, RenderTexture renderTo, Texture inputTex, bool isFirst = true)
     {
-        var shaderName = name+shaderfolder;
+        var shaderName = name + shaderfolder;
         var shaderFolderPath = $"Assets/NewShaders/{shaderfolder}";
         try
         {
-            if (Directory.Exists(shaderFolderPath))
-                Directory.Delete(shaderFolderPath, true);
-            Directory.CreateDirectory(shaderFolderPath);
+            if (isFirst)
+            {
+                if (Directory.Exists(shaderFolderPath))
+                    Directory.Delete(shaderFolderPath, true);
+                Directory.CreateDirectory(shaderFolderPath);
+            }
         }
         catch (Exception) { }
         var assetShaderPath = $"{shaderFolderPath}/{shaderName}.shader";
         GenerateShaderCode(assetShaderPath, shaderName);
         UnityEditor.AssetDatabase.ImportAsset(assetShaderPath);
-        var shader = Shader.Find($"Unlit/{shaderName}");
+        var shader = UnityEditor.AssetDatabase.LoadAssetAtPath<Shader>(assetShaderPath);
         var material = new Material(shader);
         material.SetVector("iSize", new Vector2(renderTo.width, renderTo.height));
         material.SetTexture("myTexture", inputTex);
@@ -89,10 +93,10 @@ public class HandleShaderGen : AShaderGen
         sb.AppendLine("float shape;");
         sb.AppendLine($"float rep = {UnityEngine.Random.Range(0.01f, 0.07f)};");
 
-        if (UnityEngine.Random.Range(0.0f,1.0f) < 0.5f)
+        if (UnityEngine.Random.Range(0.0f, 1.0f) < 0.5f)
             sb.AppendLine($"float border = _sqr(mul(fmod(uv+rep*0.5, float2(rep, rep))-rep*0.5, r2d({UnityEngine.Random.Range(-5.0f, 5.0f)})), float2({UnityEngine.Random.Range(1.0f, 2.0f)}, rep*{UnityEngine.Random.Range(0.15f, 0.4f)}));");
         else
-            sb.AppendLine($"float border = _sqr(mul(uv, r2d({UnityEngine.Random.Range(-5.0f, 5.0f)})), float2({UnityEngine.Random.Range(1.0f,2.0f)}, {UnityEngine.Random.Range(0.15f,0.4f)}));");
+            sb.AppendLine($"float border = _sqr(mul(uv, r2d({UnityEngine.Random.Range(-5.0f, 5.0f)})), float2({UnityEngine.Random.Range(1.0f, 2.0f)}, {UnityEngine.Random.Range(0.15f, 0.4f)}));");
 
         for (int i = 0; i < 15; ++i)
         {
@@ -112,7 +116,7 @@ public class HandleShaderGen : AShaderGen
             "col = col.yzx;",
         };
 
-        if (UnityEngine.Random.Range(0.0f,1.0f) < 0.5f)
+        if (UnityEngine.Random.Range(0.0f, 1.0f) < 0.5f)
         {
             sb.AppendLine("col = 1.0-col;");
         }
