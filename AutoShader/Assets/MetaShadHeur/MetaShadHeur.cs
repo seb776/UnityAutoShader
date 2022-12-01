@@ -80,7 +80,7 @@ public class MetaShadHeur : AShaderGen
     private List<Sample> _generateInitialState()
     {
         var samples = new List<Sample>();
-        for (int j = 0; j < 42; ++j)
+        for (int j = 0; j < 20; ++j)
         {
             var sample = new Sample();
             sample.Size = UnityEngine.Random.Range(0.1f, 2.0f);
@@ -104,20 +104,20 @@ public class MetaShadHeur : AShaderGen
         {
             var sample = samples[UnityEngine.Random.Range(0, samples.Count)];
             var propertyChange = UnityEngine.Random.Range(0, 3);
-            //if (propertyChange == 0)
+            if (propertyChange == 0)
             {
                 sample.Color.x = UnityEngine.Random.Range(0.0f, 1.0f);
                 sample.Color.y = UnityEngine.Random.Range(0.0f, 1.0f);
                 sample.Color.z = UnityEngine.Random.Range(0.0f, 1.0f);
             }
-            //if (propertyChange == 1)
+            if (propertyChange == 1)
             {
                 float posLim = 5.0f;
                 sample.Position.x = UnityEngine.Random.Range(-posLim, posLim);
                 sample.Position.y = UnityEngine.Random.Range(-posLim, posLim);
                 sample.Position.z = UnityEngine.Random.Range(0.0f, posLim);
             }
-            //if (propertyChange == 2)
+            if (propertyChange == 2)
                 sample.Size = UnityEngine.Random.Range(0.1f, 2.0f);
         }
         return samples;
@@ -127,7 +127,7 @@ public class MetaShadHeur : AShaderGen
     {
         var outputImgPath = $@"C:\TMPImages\shader{i}METASHADHEUR.png";
         var compareImgPath = AssetDatabase.GetAssetPath(CompareImage);
-        string diffCmd = $"/C magick composite  {outputImgPath} {compareImgPath} -compose subtract C:\\TMPImages\\difference.png";
+        string diffCmd = $"/C magick composite {compareImgPath} {outputImgPath}  -compose subtract C:\\TMPImages\\difference.png";
         var processDiff = new System.Diagnostics.Process();
         processDiff.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
         processDiff.StartInfo.CreateNoWindow = true;
@@ -137,7 +137,7 @@ public class MetaShadHeur : AShaderGen
         processDiff.Start();
         processDiff.WaitForExit();
 
-        string scoreCmd = $"/C magick identify -format \" %[fx: mean]\" C:\\TMPImages\\difference.png";
+        string scoreCmd = $"/C magick identify -format \" %[fx: median]\" C:\\TMPImages\\difference.png";
         //Create process
         System.Diagnostics.Process process = new System.Diagnostics.Process();
         process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
@@ -170,7 +170,7 @@ public class MetaShadHeur : AShaderGen
             float curEnergy = _measureEnergy(i);
             Debug.Log($"Cur energy {curEnergy} best:{bestEnergy} temp:{temperature}");
             float deltaEnergy = curEnergy - bestEnergy;
-            if (deltaEnergy < 0.0f || UnityEngine.Random.Range(0.0f,1.0f) > Mathf.Exp(-deltaEnergy/temperature))
+            if (deltaEnergy < 0.0f)// || UnityEngine.Random.Range(0.0f,1.0f) < Mathf.Exp(-deltaEnergy/temperature))
             {
                 bestEnergy = curEnergy;
                 bestSolution = _samples;

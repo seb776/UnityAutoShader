@@ -389,6 +389,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DoRender: 0
-  CompareImage: {fileID: 2800000, guid: 64941ab39e123494eb9ea5d8c1646577, type: 3}
+  CompareImage: {fileID: 2800000, guid: dc4ed1bdddd7af247871027409ac1765, type: 3}
   RenderTexture: {fileID: 8400000, guid: 928f6ad5fa08cbe439f2a34a20c42f89, type: 2}
   InputTexture: {fileID: 0}
