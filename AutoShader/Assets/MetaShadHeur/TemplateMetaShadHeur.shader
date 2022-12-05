@@ -22,6 +22,10 @@
                 float4 vertex : SV_POSITION;
             };
 			float2 iSize;
+#define SAMPLES_COUNT 42
+			float _Sizes[SAMPLES_COUNT];
+			float4 _Positions[SAMPLES_COUNT];
+			float4 _Colors[SAMPLES_COUNT];
 
 
             v2f vert (appdata v)
@@ -70,7 +74,6 @@
 
 			float3 rdr(float2 uv)
 			{
-				[2]
 				float3 col = float3(0., 0., 0.);
 				
 				float3 ro = float3(0., -1., -5.);
@@ -82,7 +85,7 @@
 				float3 res = trace(ro, rd, 128);
 				if (res.y > 0.)
 				{
-					col = cols[int(res.z)];
+					col = _Colors[int(res.z)].xyz;
 				}
 
 				return col;

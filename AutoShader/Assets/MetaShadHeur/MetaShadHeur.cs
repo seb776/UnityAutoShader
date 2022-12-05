@@ -35,6 +35,8 @@ public class MetaShadHeur : AShaderGen
     public UnityEngine.Object CompareImage;
     public RenderTexture RenderTexture;
     public Texture InputTexture;
+    private string _shaderName;
+    private Material _material;
     // Start is called before the first frame update
     void Start()
     {
@@ -45,6 +47,25 @@ public class MetaShadHeur : AShaderGen
             .Replace("[1]", "{1}")
             .Replace("[2]", "{2}");
 
+        _shaderName = "METASHADHEUR/shader";
+        var assetShaderPath = $"Assets/NewShaders/METASHADHEUR/metashader.shader";
+        _samples = _generateInitialState();
+
+        GenerateShaderCode(assetShaderPath, _shaderName);
+
+        UnityEditor.AssetDatabase.ImportAsset(assetShaderPath);
+        var shader = UnityEditor.AssetDatabase.LoadAssetAtPath<Shader>(assetShaderPath);
+        _material = new Material(shader);
+        _material.SetVector("iSize", new Vector2(RenderTexture.width, RenderTexture.height));
+        ////_material.SetTexture("myTexture", inputTex);
+        //Graphics.Blit(null, renderTo, _material);
+
+        //if (!Directory.Exists(output))
+        //    Directory.CreateDirectory(output);
+        //SaveTexture($@"{output}\{shaderName}.png", renderTo);
+
+        //DestroyImmediate(_material);
+        //DestroyImmediate(shader);
     }
 
     string _templateCode;
@@ -58,17 +79,12 @@ public class MetaShadHeur : AShaderGen
         for (int i = 0; i < _samples.Count; ++i)
         {
             var pos = _samples[i].Position;
-            var position = $"p-float3({pos.x}, {pos.y}, {pos.z})";
-            sbMap.AppendLine($"acc = _min(acc, float2(length({position}) - {_samples[i].Size}, {i}.));");
+            var position = $"p-_Positions[{i}].xyz";
+            sbMap.AppendLine($"acc = _min(acc, float2(length({position}) - _Sizes[{i}], {i}.));");
         }
 
 
-        StringBuilder sbRender = new StringBuilder(_samples.Count * 100);
-        sbRender.AppendLine($"float3 cols[{_samples.Count}];");
-        for (int i = 0; i < _samples.Count; ++i)
-            sbRender.AppendLine($"cols[{i}] = float3({_samples[i].Color.x}, {_samples[i].Color.y}, {_samples[i].Color.z});");
-
-        var newText = String.Format(_templateCode, shaderName, sbMap.ToString(), sbRender.ToString());
+        var newText = String.Format(_templateCode, shaderName, sbMap.ToString());
         //var newText = _templateCode
         //.Replace("{0}", shaderName)
         //.Replace("{1}", sbMap.ToString())
@@ -80,7 +96,7 @@ public class MetaShadHeur : AShaderGen
     private List<Sample> _generateInitialState()
     {
         var samples = new List<Sample>();
-        for (int j = 0; j < 20; ++j)
+        for (int j = 0; j < 42; ++j)
         {
             var sample = new Sample();
             sample.Size = UnityEngine.Random.Range(0.1f, 2.0f);
@@ -104,20 +120,20 @@ public class MetaShadHeur : AShaderGen
         {
             var sample = samples[UnityEngine.Random.Range(0, samples.Count)];
             var propertyChange = UnityEngine.Random.Range(0, 3);
-            if (propertyChange == 0)
+            //if (propertyChange == 0)
             {
                 sample.Color.x = UnityEngine.Random.Range(0.0f, 1.0f);
                 sample.Color.y = UnityEngine.Random.Range(0.0f, 1.0f);
                 sample.Color.z = UnityEngine.Random.Range(0.0f, 1.0f);
             }
-            if (propertyChange == 1)
+            //if (propertyChange == 1)
             {
                 float posLim = 5.0f;
                 sample.Position.x = UnityEngine.Random.Range(-posLim, posLim);
                 sample.Position.y = UnityEngine.Random.Range(-posLim, posLim);
                 sample.Position.z = UnityEngine.Random.Range(0.0f, posLim);
             }
-            if (propertyChange == 2)
+            //if (propertyChange == 2)
                 sample.Size = UnityEngine.Random.Range(0.1f, 2.0f);
         }
         return samples;
@@ -125,9 +141,26 @@ public class MetaShadHeur : AShaderGen
 
     private float _measureEnergy(int i)
     {
+
+        RenderTexture.active = this.RenderTexture;
+        Texture2D myTexture2D = new Texture2D(this.RenderTexture.width, this.RenderTexture.height);
+        myTexture2D.ReadPixels(new Rect(0, 0, this.RenderTexture.width, this.RenderTexture.height), 0, 0);
+        myTexture2D.Apply();
+        RenderTexture.active = this.RenderTexture;
+
+        Color[] colors = myTexture2D.GetPixels();
+        float LightLevel = 0.0f;
+        for (int j = 0; j < colors.Length; j++)
+        {
+            LightLevel += (0.2126f * colors[j].r) + (0.7152f * colors[j].g) + (0.0722f * colors[j].b);
+        }
+        LightLevel /= (float)colors.Length;
+        Destroy(myTexture2D); // Check
+        Debug.Log("Light: " + LightLevel);
+        return LightLevel;
         var outputImgPath = $@"C:\TMPImages\shader{i}METASHADHEUR.png";
         var compareImgPath = AssetDatabase.GetAssetPath(CompareImage);
-        string diffCmd = $"/C magick composite {compareImgPath} {outputImgPath}  -compose subtract C:\\TMPImages\\difference.png";
+        string diffCmd = $"/C magick composite {compareImgPath} {outputImgPath}  -compose subtract C:\\TMPImages\\difference.png & pause";
         var processDiff = new System.Diagnostics.Process();
         processDiff.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
         processDiff.StartInfo.CreateNoWindow = true;
@@ -137,7 +170,7 @@ public class MetaShadHeur : AShaderGen
         processDiff.Start();
         processDiff.WaitForExit();
 
-        string scoreCmd = $"/C magick identify -format \" %[fx: median]\" C:\\TMPImages\\difference.png";
+        string scoreCmd = $"/C magick identify -format \" %[fx: mean]\" C:\\TMPImages\\difference.png";
         //Create process
         System.Diagnostics.Process process = new System.Diagnostics.Process();
         process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
@@ -148,24 +181,52 @@ public class MetaShadHeur : AShaderGen
         process.StartInfo.RedirectStandardOutput = true;
         process.StartInfo.RedirectStandardError = true;
         process.Start();
+        process.WaitForExit();
         string output = process.StandardOutput.ReadToEnd();
         Debug.Log("Yeah  => :" + output + ":" + process.StandardError.ReadToEnd());
-        process.WaitForExit();
         return float.Parse(output);
     }
 
     IEnumerator _corout()
     {
-        _samples = _generateInitialState();
         float temperature = 200.0f;
         IList<Sample> bestSolution = _samples;
         float bestEnergy = 100.0f;
-        for (int i = 0; bestEnergy > 0.05f; ++i)
+        for (int i = 0; bestEnergy > 0.01f; ++i)
         {
             _samples = _mutate(bestSolution);
             temperature *= 0.99f;
 
-            Render($"shader{i}", "METASHADHEUR", @"C:\TMPImages\", RenderTexture, InputTexture, i == 0);
+            //Render($"shader{i}", "METASHADHEUR", @"C:\TMPImages\", RenderTexture, InputTexture, i == 0);
+            // =============================================
+            _material.SetVector("iSize", new Vector2(RenderTexture.width, RenderTexture.height));
+            _material.SetVectorArray("_Colors", _samples.Select(el => new Vector4(el.Color.x, el.Color.y, el.Color.z, 1.0f)).ToArray());
+            _material.SetVectorArray("_Positions", _samples.Select(el => new Vector4(el.Position.x, el.Position.y, el.Position.z, 1.0f)).ToArray());
+            _material.SetFloatArray("_Sizes", _samples.Select(el => el.Size).ToArray());
+            //_material.SetTexture("myTexture", inputTex);
+            Graphics.Blit(null, RenderTexture, _material);
+            var output = @"C:\TMPImages\";
+            if (!Directory.Exists(output))
+                Directory.CreateDirectory(output);
+            var outputImgPath = $@"{output}\shader{i}METASHADHEUR.png";
+            if (i % 10 == 0)
+            {
+                SaveTexture(outputImgPath, RenderTexture);
+                var compareImgPath = AssetDatabase.GetAssetPath(CompareImage);
+                string diffCmd = $"/C magick composite {compareImgPath} {outputImgPath}  -compose subtract C:\\TMPImages\\difference.png & pause";
+                var processDiff = new System.Diagnostics.Process();
+                processDiff.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                processDiff.StartInfo.CreateNoWindow = true;
+                processDiff.StartInfo.FileName = "CMD.exe";
+                processDiff.StartInfo.Arguments = diffCmd;
+                processDiff.StartInfo.UseShellExecute = false;
+                processDiff.Start();
+                processDiff.WaitForExit();
+            }
+
+            //DestroyImmediate(_material);
+            //DestroyImmediate(shader);
+            // =============================================
 
             float curEnergy = _measureEnergy(i);
             Debug.Log($"Cur energy {curEnergy} best:{bestEnergy} temp:{temperature}");

@@ -57,7 +57,7 @@ public abstract class AShaderGen : MonoBehaviour
 
         DestroyImmediate(tex);
     }
-    Texture2D toTexture2D(RenderTexture rTex)
+    public static Texture2D toTexture2D(RenderTexture rTex)
     {
         Texture2D tex = new Texture2D(rTex.width, rTex.height, TextureFormat.RGB24, false);
         RenderTexture.active = rTex;
