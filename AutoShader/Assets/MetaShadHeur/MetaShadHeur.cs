@@ -38,7 +38,7 @@ public class MetaShadHeur : AShaderGen
     public Material DiffMaterial;
     public Texture InputTexture;
     private string _shaderName;
-    private Material _material;
+    public Material _material;
     // Start is called before the first frame update
     void Start()
     {
@@ -82,7 +82,8 @@ public class MetaShadHeur : AShaderGen
         {
             var pos = _samples[i].Position;
             var position = $"p-_Positions[{i}].xyz";
-            sbMap.AppendLine($"acc = _min(acc, float2(length({position}) - _Sizes[{i}], {i}.));");
+//            sbMap.AppendLine($"acc = _min(acc, float2(length({position}) - _Sizes[{i}], {i}.));");
+            sbMap.AppendLine($"acc = _min(acc, float2(length({position}), {i}.));");
         }
 
 
@@ -98,18 +99,23 @@ public class MetaShadHeur : AShaderGen
     private List<Sample> _generateInitialState()
     {
         var samples = new List<Sample>();
-        for (int j = 0; j < 42; ++j)
+        for (int j = 0; j < 512; ++j)
         {
             var sample = new Sample();
             sample.Size = UnityEngine.Random.Range(0.1f, 2.0f);
             float posLim = 5.0f;
             sample.Position.x = UnityEngine.Random.Range(-posLim, posLim);
             sample.Position.y = UnityEngine.Random.Range(-posLim, posLim);
-            sample.Position.z = UnityEngine.Random.Range(0.0f, posLim);
+            sample.Position.z = 0.0f;// UnityEngine.Random.Range(0.0f, posLim);
 
-            sample.Color.x = UnityEngine.Random.Range(0.0f, 1.0f);
-            sample.Color.y = UnityEngine.Random.Range(0.0f, 1.0f);
-            sample.Color.z = UnityEngine.Random.Range(0.0f, 1.0f);
+            //sample.Color.x = UnityEngine.Random.Range(0.0f, 1.0f);
+            //sample.Color.y = UnityEngine.Random.Range(0.0f, 1.0f);
+            //sample.Color.z = UnityEngine.Random.Range(0.0f, 1.0f);
+
+            float c = UnityEngine.Random.Range(0, 2);
+            sample.Color.x = c;
+            sample.Color.y = c;
+            sample.Color.z = c;
             samples.Add(sample);
         }
         return samples;
@@ -124,9 +130,14 @@ public class MetaShadHeur : AShaderGen
             var propertyChange = UnityEngine.Random.Range(0, 3);
             if (propertyChange == 0)
             {
-                sample.Color.x = UnityEngine.Random.Range(0.0f, 1.0f);
-                sample.Color.y = UnityEngine.Random.Range(0.0f, 1.0f);
-                sample.Color.z = UnityEngine.Random.Range(0.0f, 1.0f);
+                float c = UnityEngine.Random.Range(0, 2);
+                sample.Color.x = c;
+                sample.Color.y = c;
+                sample.Color.z = c;
+
+                //sample.Color.x = UnityEngine.Random.Range(0.0f, 1.0f);
+                //sample.Color.y = UnityEngine.Random.Range(0.0f, 1.0f);
+                //sample.Color.z = UnityEngine.Random.Range(0.0f, 1.0f);
 
                 //sample.Color.x = Mathf.Lerp(sample.Color.x, UnityEngine.Random.Range(0.0f, 1.0f), 0.25f);
                 //sample.Color.y = Mathf.Lerp(sample.Color.y, UnityEngine.Random.Range(0.0f, 1.0f), 0.25f);
@@ -137,7 +148,7 @@ public class MetaShadHeur : AShaderGen
                 float posLim = 5.0f;
                 sample.Position.x = UnityEngine.Random.Range(-posLim, posLim);
                 sample.Position.y = UnityEngine.Random.Range(-posLim, posLim);
-                sample.Position.z = UnityEngine.Random.Range(0.0f, posLim);
+                sample.Position.z = 0.0f;// UnityEngine.Random.Range(0.0f, posLim);
             }
             if (propertyChange == 2)
                 sample.Size = UnityEngine.Random.Range(0.1f, 2.0f);
@@ -153,7 +164,7 @@ public class MetaShadHeur : AShaderGen
         RenderTexture.active = this.DiffRenderTexture;
         Texture2D myTexture2D = new Texture2D(this.DiffRenderTexture.width, this.DiffRenderTexture.height);
         myTexture2D.ReadPixels(new Rect(0, 0, this.DiffRenderTexture.width, this.DiffRenderTexture.height), 0, 0);
-        myTexture2D.Apply();
+        //myTexture2D.Apply();
         RenderTexture.active = this.DiffRenderTexture;
 
         Color[] colors = myTexture2D.GetPixels();
@@ -165,7 +176,7 @@ public class MetaShadHeur : AShaderGen
         }
         LightLevel /= (float)colors.Length;
         Destroy(myTexture2D); // Check
-        Debug.Log("Light: " + LightLevel);
+        //Debug.Log("Light: " + LightLevel);
         return LightLevel;
         var outputImgPath = $@"C:\TMPImages\shader{i}METASHADHEUR.png";
         var compareImgPath = AssetDatabase.GetAssetPath(CompareImage);
@@ -218,27 +229,17 @@ public class MetaShadHeur : AShaderGen
             if (!Directory.Exists(output))
                 Directory.CreateDirectory(output);
             var outputImgPath = $@"{output}\shader{i}METASHADHEUR.png";
-            if (i % 50 == 0)
-            {
-                SaveTexture(outputImgPath, RenderTexture);
-                //var compareImgPath = AssetDatabase.GetAssetPath(CompareImage);
-                //string diffCmd = $"/C magick composite {compareImgPath} {outputImgPath}  -compose subtract C:\\TMPImages\\difference.png & pause";
-                //var processDiff = new System.Diagnostics.Process();
-                //processDiff.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-                //processDiff.StartInfo.CreateNoWindow = true;
-                //processDiff.StartInfo.FileName = "CMD.exe";
-                //processDiff.StartInfo.Arguments = diffCmd;
-                //processDiff.StartInfo.UseShellExecute = false;
-                //processDiff.Start();
-                //processDiff.WaitForExit();
-            }
-
             //DestroyImmediate(_material);
             //DestroyImmediate(shader);
             // =============================================
 
             float curEnergy = _measureEnergy(i);
-            Debug.Log($"Cur energy {curEnergy} best:{bestEnergy} temp:{temperature}");
+            if (i % 50 == 0)
+            {
+                SaveTexture(outputImgPath, RenderTexture);
+                Debug.Log($"Cur energy {curEnergy} best:{bestEnergy} temp:{temperature}");
+            }
+
             float deltaEnergy = curEnergy - bestEnergy;
             if (deltaEnergy < 0.0f)// || UnityEngine.Random.Range(0.0f,1.0f) < Mathf.Exp(-deltaEnergy/temperature))
             {
@@ -255,7 +256,8 @@ public class MetaShadHeur : AShaderGen
                     Directory.CreateDirectory(output);
                 SaveTexture($@"{output}\shaderFinalMETASHADHEUR.png", RenderTexture);
             }
-            yield return new WaitForEndOfFrame();
+            if (i%5 == 0)
+                yield return new WaitForEndOfFrame();
         }
 
         _samples = bestSolution;
