@@ -39,6 +39,8 @@ public class MetaShadHeur : AShaderGen
     public Texture InputTexture;
     private string _shaderName;
     public Material _material;
+    public RenderTexture BrightnessRenderTexture;
+    public Material ComputeBrightnessMat;
     // Start is called before the first frame update
     void Start()
     {
@@ -99,10 +101,10 @@ public class MetaShadHeur : AShaderGen
     private List<Sample> _generateInitialState()
     {
         var samples = new List<Sample>();
-        for (int j = 0; j < 512; ++j)
+        for (int j = 0; j < 256; ++j)
         {
             var sample = new Sample();
-            sample.Size = UnityEngine.Random.Range(0.1f, 2.0f);
+            sample.Size = 1.0f;// UnityEngine.Random.Range(0.1f, 1.0f);
             float posLim = 5.0f;
             sample.Position.x = UnityEngine.Random.Range(-posLim, posLim);
             sample.Position.y = UnityEngine.Random.Range(-posLim, posLim);
@@ -128,7 +130,7 @@ public class MetaShadHeur : AShaderGen
         {
             var sample = samples[UnityEngine.Random.Range(0, samples.Count)];
             var propertyChange = UnityEngine.Random.Range(0, 3);
-            if (propertyChange == 0)
+            //if (propertyChange == 0)
             {
                 float c = UnityEngine.Random.Range(0, 2);
                 sample.Color.x = c;
@@ -143,15 +145,17 @@ public class MetaShadHeur : AShaderGen
                 //sample.Color.y = Mathf.Lerp(sample.Color.y, UnityEngine.Random.Range(0.0f, 1.0f), 0.25f);
                 //sample.Color.z = Mathf.Lerp(sample.Color.z, UnityEngine.Random.Range(0.0f, 1.0f), 0.25f);
             }
-            if (propertyChange == 1)
+            //if (propertyChange == 1)
             {
                 float posLim = 5.0f;
+
+
                 sample.Position.x = UnityEngine.Random.Range(-posLim, posLim);
                 sample.Position.y = UnityEngine.Random.Range(-posLim, posLim);
                 sample.Position.z = 0.0f;// UnityEngine.Random.Range(0.0f, posLim);
             }
-            if (propertyChange == 2)
-                sample.Size = UnityEngine.Random.Range(0.1f, 2.0f);
+            //if (propertyChange == 2)
+            sample.Size = 1.0f;// UnityEngine.Random.Range(0.1f, 1.0f);// Mathf.Lerp(sample.Size, , 0.5f);
         }
         return samples;
     }
@@ -161,11 +165,13 @@ public class MetaShadHeur : AShaderGen
         DiffMaterial.SetTexture("_MainTex", (Texture)CompareImage);
         DiffMaterial.SetTexture("_SecondTex", this.RenderTexture);
         Graphics.Blit(null, DiffRenderTexture, DiffMaterial);
-        RenderTexture.active = this.DiffRenderTexture;
-        Texture2D myTexture2D = new Texture2D(this.DiffRenderTexture.width, this.DiffRenderTexture.height);
-        myTexture2D.ReadPixels(new Rect(0, 0, this.DiffRenderTexture.width, this.DiffRenderTexture.height), 0, 0);
+        ComputeBrightnessMat.SetTexture("_MainTex", this.DiffRenderTexture);
+        Graphics.Blit(null, BrightnessRenderTexture, ComputeBrightnessMat);
+        RenderTexture.active = this.BrightnessRenderTexture;
+        Texture2D myTexture2D = new Texture2D(1,1);
+        myTexture2D.ReadPixels(new Rect(0, 0, 1,1), 0, 0);
         //myTexture2D.Apply();
-        RenderTexture.active = this.DiffRenderTexture;
+        RenderTexture.active = this.BrightnessRenderTexture;
 
         Color[] colors = myTexture2D.GetPixels();
         float LightLevel = 0.0f;
@@ -241,7 +247,7 @@ public class MetaShadHeur : AShaderGen
             }
 
             float deltaEnergy = curEnergy - bestEnergy;
-            if (deltaEnergy < 0.0f)// || UnityEngine.Random.Range(0.0f,1.0f) < Mathf.Exp(-deltaEnergy/temperature))
+            if (deltaEnergy < 0.0f)//|| UnityEngine.Random.Range(0.0f,1.0f) < Mathf.Exp(-deltaEnergy/temperature))
             {
                 bestEnergy = curEnergy;
                 bestSolution = _samples;
@@ -256,7 +262,7 @@ public class MetaShadHeur : AShaderGen
                     Directory.CreateDirectory(output);
                 SaveTexture($@"{output}\shaderFinalMETASHADHEUR.png", RenderTexture);
             }
-            if (i%5 == 0)
+            if (i % 5 == 0)
                 yield return new WaitForEndOfFrame();
         }
 
