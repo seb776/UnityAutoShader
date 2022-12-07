@@ -104,20 +104,20 @@ public class MetaShadHeur : AShaderGen
         for (int j = 0; j < 256; ++j)
         {
             var sample = new Sample();
-            sample.Size = 1.0f;// UnityEngine.Random.Range(0.1f, 1.0f);
+            sample.Size = UnityEngine.Random.Range(0.1f, 1.0f);
             float posLim = 5.0f;
             sample.Position.x = UnityEngine.Random.Range(-posLim, posLim);
             sample.Position.y = UnityEngine.Random.Range(-posLim, posLim);
             sample.Position.z = 0.0f;// UnityEngine.Random.Range(0.0f, posLim);
 
-            //sample.Color.x = UnityEngine.Random.Range(0.0f, 1.0f);
-            //sample.Color.y = UnityEngine.Random.Range(0.0f, 1.0f);
-            //sample.Color.z = UnityEngine.Random.Range(0.0f, 1.0f);
+            sample.Color.x = UnityEngine.Random.Range(0.0f, 1.0f);
+            sample.Color.y = UnityEngine.Random.Range(0.0f, 1.0f);
+            sample.Color.z = UnityEngine.Random.Range(0.0f, 1.0f);
 
-            float c = UnityEngine.Random.Range(0, 2);
-            sample.Color.x = c;
-            sample.Color.y = c;
-            sample.Color.z = c;
+            //float c = UnityEngine.Random.Range(0, 2);
+            //sample.Color.x = c;
+            //sample.Color.y = c;
+            //sample.Color.z = c;
             samples.Add(sample);
         }
         return samples;
@@ -125,27 +125,27 @@ public class MetaShadHeur : AShaderGen
     private IList<Sample> _mutate(IList<Sample> samples)
     {
         samples = samples.Clone();
-        int changes = 5;
+        int changes = 15;
         for (int i = 0; i < changes; ++i)
         {
             var sample = samples[UnityEngine.Random.Range(0, samples.Count)];
             var propertyChange = UnityEngine.Random.Range(0, 3);
-            //if (propertyChange == 0)
+            if (propertyChange == 0)
             {
                 float c = UnityEngine.Random.Range(0, 2);
                 sample.Color.x = c;
                 sample.Color.y = c;
                 sample.Color.z = c;
 
-                //sample.Color.x = UnityEngine.Random.Range(0.0f, 1.0f);
-                //sample.Color.y = UnityEngine.Random.Range(0.0f, 1.0f);
-                //sample.Color.z = UnityEngine.Random.Range(0.0f, 1.0f);
+                sample.Color.x = UnityEngine.Random.Range(0.0f, 1.0f);
+                sample.Color.y = UnityEngine.Random.Range(0.0f, 1.0f);
+                sample.Color.z = UnityEngine.Random.Range(0.0f, 1.0f);
 
                 //sample.Color.x = Mathf.Lerp(sample.Color.x, UnityEngine.Random.Range(0.0f, 1.0f), 0.25f);
                 //sample.Color.y = Mathf.Lerp(sample.Color.y, UnityEngine.Random.Range(0.0f, 1.0f), 0.25f);
                 //sample.Color.z = Mathf.Lerp(sample.Color.z, UnityEngine.Random.Range(0.0f, 1.0f), 0.25f);
             }
-            //if (propertyChange == 1)
+            if (propertyChange == 1)
             {
                 float posLim = 5.0f;
 
@@ -154,8 +154,8 @@ public class MetaShadHeur : AShaderGen
                 sample.Position.y = UnityEngine.Random.Range(-posLim, posLim);
                 sample.Position.z = 0.0f;// UnityEngine.Random.Range(0.0f, posLim);
             }
-            //if (propertyChange == 2)
-            sample.Size = 1.0f;// UnityEngine.Random.Range(0.1f, 1.0f);// Mathf.Lerp(sample.Size, , 0.5f);
+            if (propertyChange == 2)
+                sample.Size = UnityEngine.Random.Range(0.1f, 1.0f);// Mathf.Lerp(sample.Size, , 0.5f);
         }
         return samples;
     }
