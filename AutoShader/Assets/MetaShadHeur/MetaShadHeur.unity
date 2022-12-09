@@ -547,7 +547,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DoRender: 0
-  CompareImage: {fileID: 2800000, guid: 679a0348f703fe54c9a844b3ab36e480, type: 3}
+  CompareImage: {fileID: 2800000, guid: c9992208d33c8a44a8a6eb27b4094e8f, type: 3}
   RenderTexture: {fileID: 8400000, guid: 928f6ad5fa08cbe439f2a34a20c42f89, type: 2}
   DiffRenderTexture: {fileID: 8400000, guid: 0f414bb5b8d42fe42b2ffc6be0adc05a, type: 2}
   DiffMaterial: {fileID: 2100000, guid: e3d585c6dbceb8345a7896116b5d6271, type: 2}

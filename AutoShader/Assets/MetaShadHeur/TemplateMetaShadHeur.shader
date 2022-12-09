@@ -24,7 +24,7 @@
                 float4 vertex : SV_POSITION;
             };
 			float2 iSize;
-#define SAMPLES_COUNT 256
+#define SAMPLES_COUNT 128
 			float _Sizes[SAMPLES_COUNT];
 			float4 _Positions[SAMPLES_COUNT];
 			float4 _Colors[SAMPLES_COUNT];
@@ -89,9 +89,9 @@
 				float3 res = trace(ro, rd, 128);
 				if (res.y > 0.)
 				{
-					//col = _Colors[int(res.z)].xyz;
+					col = _Colors[int(res.z)].xyz;
 				}
-				col += accCol;
+//				col += accCol;
 				return col;
 			}
 
