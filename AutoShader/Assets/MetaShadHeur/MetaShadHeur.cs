@@ -95,8 +95,8 @@ public class MetaShadHeur : AShaderGen
         {
             var pos = _samples[i].Position;
             var position = $"p-_Positions[{i}].xyz";
-            sbMap.AppendLine($"acc = _min(acc, float2(length({position}) - _Sizes[{i}], {i}.));");
-            //            sbMap.AppendLine($"acc = _min(acc, float2(length({position}), {i}.));");
+            //sbMap.AppendLine($"acc = _min(acc, float2(length({position}) - _Sizes[{i}], {i}.));");
+            sbMap.AppendLine($"acc = _min(acc, float2(length({position}), {i}.));");
         }
 
 
@@ -112,14 +112,14 @@ public class MetaShadHeur : AShaderGen
     private List<Sample> _generateInitialState()
     {
         var samples = new List<Sample>();
-        for (int j = 0; j < 128; ++j)
+        for (int j = 0; j < 42; ++j)
         {
             var sample = new Sample();
             sample.Size = UnityEngine.Random.Range(0.1f, 2.0f);
             float posLim = 5.0f;
             sample.Position.x = UnityEngine.Random.Range(-posLim, posLim);
             sample.Position.y = UnityEngine.Random.Range(-posLim, posLim);
-            sample.Position.z = UnityEngine.Random.Range(0.0f, posLim / 2.0f);
+            sample.Position.z = UnityEngine.Random.Range(-posLim, posLim);
 
             sample.Color.x = UnityEngine.Random.Range(0.0f, 1.0f);
             sample.Color.y = UnityEngine.Random.Range(0.0f, 1.0f);
@@ -141,12 +141,12 @@ public class MetaShadHeur : AShaderGen
     private IList<Sample> _mutate(IList<Sample> samples)
     {
         samples = samples.Clone();
-        int changes = 1;// (int)((float)samples.Count *(5.0f/100.0f));
+        int changes = 3;// (int)((float)samples.Count *(5.0f/100.0f));
         for (int i = 0; i < changes; ++i)
         {
             var sample = samples[UnityEngine.Random.Range(0, samples.Count)];
             var propertyChange = UnityEngine.Random.Range(0, 3);
-            if (propertyChange == 0)
+            //if (propertyChange == 0)
             {
                 float c = UnityEngine.Random.Range(0, 2);
                 sample.Color.x = c;
@@ -166,16 +166,16 @@ public class MetaShadHeur : AShaderGen
                 //sample.Color.y = Mathf.Lerp(sample.Color.y, UnityEngine.Random.Range(0.0f, 1.0f), 0.25f);
                 //sample.Color.z = Mathf.Lerp(sample.Color.z, UnityEngine.Random.Range(0.0f, 1.0f), 0.25f);
             }
-            if (propertyChange == 1)
+            //if (propertyChange == 1)
             {
                 float posLim = 5.0f;
 
 
                 sample.Position.x = UnityEngine.Random.Range(-posLim, posLim);
                 sample.Position.y = UnityEngine.Random.Range(-posLim, posLim);
-                sample.Position.z = UnityEngine.Random.Range(0.0f, posLim / 2.0f);
+                sample.Position.z = UnityEngine.Random.Range(-posLim, posLim);
             }
-            if (propertyChange == 2)
+            //if (propertyChange == 2)
                 sample.Size = UnityEngine.Random.Range(0.1f, 2.0f);// Mathf.Lerp(sample.Size, , 0.5f);
         }
         return samples;
@@ -234,7 +234,7 @@ public class MetaShadHeur : AShaderGen
     IEnumerator _coroutSimulatedGeneticAlgorithm()
     {
         List<IList<Sample>> population = new List<IList<Sample>>();
-        int populationSize = 200;
+        int populationSize = 500;
         float bestEnergy = 100000.0f;
         IList<Sample> bestSolution = null;
         for (int i = 0; i < populationSize; ++i)
@@ -263,20 +263,21 @@ public class MetaShadHeur : AShaderGen
                 sortedByFit.Add(energy, individual);
                 yield return new WaitForEndOfFrame();
             }
+            Debug.Log("Current best " + sortedByFit.First().Key);
             List<IList<Sample>> nextPopulation = new List<IList<Sample>>();
 
             // We generated the new population
-            float coefCrossOver = 0.6f; // Chanced of cross over => the rest is mutation
-            float coefGoodSamples = 0.7f;
-            float coefBadSamples = 0.0f;// Chances of getting a random individual (including non elite)
+            float coefCrossOver = 0.7f; // Chanced of cross over => the rest is mutation
+            float coefGoodSamples = 0.3f;
+            float coefBadSamples = 0.05f;// Chances of getting a random individual (including non elite)
 
             for (int iNew = 0; iNew < populationSize/2; ++iNew)
             {
                 IList<Sample> newIndividual = null;// = new List<Sample>();
                 int maxIdx = Mathf.RoundToInt(coefGoodSamples * populationSize);
-                //if (UnityEngine.Random.Range(0.0f, 1.0f) < coefBadSamples)
-                //    maxIdx = populationSize;
-                //if (UnityEngine.Random.Range(0.0f, 1.0f) < coefCrossOver)
+                if (UnityEngine.Random.Range(0.0f, 1.0f) < coefBadSamples)
+                    maxIdx = populationSize;
+                if (UnityEngine.Random.Range(0.0f, 1.0f) < coefCrossOver)
                 {
 
                     var parentA = population[UnityEngine.Random.Range(0, maxIdx)];
@@ -286,13 +287,22 @@ public class MetaShadHeur : AShaderGen
                     nextPopulation.Add(_crossOver(parentA, parentB, crossPoint, false));
 
                 }
+                else
+                {
+
+                    var parentA = population[UnityEngine.Random.Range(0, maxIdx)];
+                    var parentB = population[UnityEngine.Random.Range(0, maxIdx)];
+                    nextPopulation.Add(parentA);
+                    nextPopulation.Add(parentB);
+                }
             }
-            float mutationProbability = 0.1f;
+            float mutationProbability = 0.2f;
             for (int iIndiv = 0; iIndiv < nextPopulation.Count; ++iIndiv)
             {
                 if (UnityEngine.Random.Range(0.0f, 1.0f) < mutationProbability)
                     nextPopulation[iIndiv] = _mutate(nextPopulation[iIndiv]);
             }
+            nextPopulation[UnityEngine.Random.Range(0, nextPopulation.Count)] = bestSolution;
             population = nextPopulation;
             yield return new WaitForEndOfFrame();
         }
