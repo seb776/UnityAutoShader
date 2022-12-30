@@ -2,6 +2,7 @@ Shader "Unlit/METASHADHEUR/shader"
 {
     Properties {
 			_Sharpness("Sharpness", Float) = 1.0
+			_Off("Off", Vector) = (0,0,0,0)
 	}
     SubShader
     {
@@ -24,12 +25,12 @@ Shader "Unlit/METASHADHEUR/shader"
                 float4 vertex : SV_POSITION;
             };
 			float2 iSize;
-#define SAMPLES_COUNT 42
+#define SAMPLES_COUNT 128
 			float _Sizes[SAMPLES_COUNT];
 			float4 _Positions[SAMPLES_COUNT];
 			float4 _Colors[SAMPLES_COUNT];
 			float _Sharpness;
-
+			float4 _Off;
             v2f vert (appdata v)
             {
                 v2f o;
@@ -91,6 +92,92 @@ acc = _min(acc, float2(length(p-_Positions[38].xyz), 38.));
 acc = _min(acc, float2(length(p-_Positions[39].xyz), 39.));
 acc = _min(acc, float2(length(p-_Positions[40].xyz), 40.));
 acc = _min(acc, float2(length(p-_Positions[41].xyz), 41.));
+acc = _min(acc, float2(length(p-_Positions[42].xyz), 42.));
+acc = _min(acc, float2(length(p-_Positions[43].xyz), 43.));
+acc = _min(acc, float2(length(p-_Positions[44].xyz), 44.));
+acc = _min(acc, float2(length(p-_Positions[45].xyz), 45.));
+acc = _min(acc, float2(length(p-_Positions[46].xyz), 46.));
+acc = _min(acc, float2(length(p-_Positions[47].xyz), 47.));
+acc = _min(acc, float2(length(p-_Positions[48].xyz), 48.));
+acc = _min(acc, float2(length(p-_Positions[49].xyz), 49.));
+acc = _min(acc, float2(length(p-_Positions[50].xyz), 50.));
+acc = _min(acc, float2(length(p-_Positions[51].xyz), 51.));
+acc = _min(acc, float2(length(p-_Positions[52].xyz), 52.));
+acc = _min(acc, float2(length(p-_Positions[53].xyz), 53.));
+acc = _min(acc, float2(length(p-_Positions[54].xyz), 54.));
+acc = _min(acc, float2(length(p-_Positions[55].xyz), 55.));
+acc = _min(acc, float2(length(p-_Positions[56].xyz), 56.));
+acc = _min(acc, float2(length(p-_Positions[57].xyz), 57.));
+acc = _min(acc, float2(length(p-_Positions[58].xyz), 58.));
+acc = _min(acc, float2(length(p-_Positions[59].xyz), 59.));
+acc = _min(acc, float2(length(p-_Positions[60].xyz), 60.));
+acc = _min(acc, float2(length(p-_Positions[61].xyz), 61.));
+acc = _min(acc, float2(length(p-_Positions[62].xyz), 62.));
+acc = _min(acc, float2(length(p-_Positions[63].xyz), 63.));
+acc = _min(acc, float2(length(p-_Positions[64].xyz), 64.));
+acc = _min(acc, float2(length(p-_Positions[65].xyz), 65.));
+acc = _min(acc, float2(length(p-_Positions[66].xyz), 66.));
+acc = _min(acc, float2(length(p-_Positions[67].xyz), 67.));
+acc = _min(acc, float2(length(p-_Positions[68].xyz), 68.));
+acc = _min(acc, float2(length(p-_Positions[69].xyz), 69.));
+acc = _min(acc, float2(length(p-_Positions[70].xyz), 70.));
+acc = _min(acc, float2(length(p-_Positions[71].xyz), 71.));
+acc = _min(acc, float2(length(p-_Positions[72].xyz), 72.));
+acc = _min(acc, float2(length(p-_Positions[73].xyz), 73.));
+acc = _min(acc, float2(length(p-_Positions[74].xyz), 74.));
+acc = _min(acc, float2(length(p-_Positions[75].xyz), 75.));
+acc = _min(acc, float2(length(p-_Positions[76].xyz), 76.));
+acc = _min(acc, float2(length(p-_Positions[77].xyz), 77.));
+acc = _min(acc, float2(length(p-_Positions[78].xyz), 78.));
+acc = _min(acc, float2(length(p-_Positions[79].xyz), 79.));
+acc = _min(acc, float2(length(p-_Positions[80].xyz), 80.));
+acc = _min(acc, float2(length(p-_Positions[81].xyz), 81.));
+acc = _min(acc, float2(length(p-_Positions[82].xyz), 82.));
+acc = _min(acc, float2(length(p-_Positions[83].xyz), 83.));
+acc = _min(acc, float2(length(p-_Positions[84].xyz), 84.));
+acc = _min(acc, float2(length(p-_Positions[85].xyz), 85.));
+acc = _min(acc, float2(length(p-_Positions[86].xyz), 86.));
+acc = _min(acc, float2(length(p-_Positions[87].xyz), 87.));
+acc = _min(acc, float2(length(p-_Positions[88].xyz), 88.));
+acc = _min(acc, float2(length(p-_Positions[89].xyz), 89.));
+acc = _min(acc, float2(length(p-_Positions[90].xyz), 90.));
+acc = _min(acc, float2(length(p-_Positions[91].xyz), 91.));
+acc = _min(acc, float2(length(p-_Positions[92].xyz), 92.));
+acc = _min(acc, float2(length(p-_Positions[93].xyz), 93.));
+acc = _min(acc, float2(length(p-_Positions[94].xyz), 94.));
+acc = _min(acc, float2(length(p-_Positions[95].xyz), 95.));
+acc = _min(acc, float2(length(p-_Positions[96].xyz), 96.));
+acc = _min(acc, float2(length(p-_Positions[97].xyz), 97.));
+acc = _min(acc, float2(length(p-_Positions[98].xyz), 98.));
+acc = _min(acc, float2(length(p-_Positions[99].xyz), 99.));
+acc = _min(acc, float2(length(p-_Positions[100].xyz), 100.));
+acc = _min(acc, float2(length(p-_Positions[101].xyz), 101.));
+acc = _min(acc, float2(length(p-_Positions[102].xyz), 102.));
+acc = _min(acc, float2(length(p-_Positions[103].xyz), 103.));
+acc = _min(acc, float2(length(p-_Positions[104].xyz), 104.));
+acc = _min(acc, float2(length(p-_Positions[105].xyz), 105.));
+acc = _min(acc, float2(length(p-_Positions[106].xyz), 106.));
+acc = _min(acc, float2(length(p-_Positions[107].xyz), 107.));
+acc = _min(acc, float2(length(p-_Positions[108].xyz), 108.));
+acc = _min(acc, float2(length(p-_Positions[109].xyz), 109.));
+acc = _min(acc, float2(length(p-_Positions[110].xyz), 110.));
+acc = _min(acc, float2(length(p-_Positions[111].xyz), 111.));
+acc = _min(acc, float2(length(p-_Positions[112].xyz), 112.));
+acc = _min(acc, float2(length(p-_Positions[113].xyz), 113.));
+acc = _min(acc, float2(length(p-_Positions[114].xyz), 114.));
+acc = _min(acc, float2(length(p-_Positions[115].xyz), 115.));
+acc = _min(acc, float2(length(p-_Positions[116].xyz), 116.));
+acc = _min(acc, float2(length(p-_Positions[117].xyz), 117.));
+acc = _min(acc, float2(length(p-_Positions[118].xyz), 118.));
+acc = _min(acc, float2(length(p-_Positions[119].xyz), 119.));
+acc = _min(acc, float2(length(p-_Positions[120].xyz), 120.));
+acc = _min(acc, float2(length(p-_Positions[121].xyz), 121.));
+acc = _min(acc, float2(length(p-_Positions[122].xyz), 122.));
+acc = _min(acc, float2(length(p-_Positions[123].xyz), 123.));
+acc = _min(acc, float2(length(p-_Positions[124].xyz), 124.));
+acc = _min(acc, float2(length(p-_Positions[125].xyz), 125.));
+acc = _min(acc, float2(length(p-_Positions[126].xyz), 126.));
+acc = _min(acc, float2(length(p-_Positions[127].xyz), 127.));
 
 
 				return acc;
@@ -122,7 +209,7 @@ acc = _min(acc, float2(length(p-_Positions[41].xyz), 41.));
 			{
 				float3 col = float3(0., 0., 0.);
 				
-				float3 ro = float3(0., -1., -5.);
+				float3 ro = float3(0., -1., -5.)+ _Off.xyz;
 				float3 ta = float3(0., 0., 0.);
 				float3 rd = normalize(ta-ro);
 				

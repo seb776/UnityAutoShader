@@ -51,8 +51,8 @@
                 // sample the texture
                 fixed3 cola = tex2D(_MainTex, i.uv).xyz;
                 fixed3 colb = tex2D(_SecondTex, i.uv).xyz;
-
-                return float4(abs(cola-colb), 1.);
+                float3 diff = abs(cola - colb);
+                return float4(diff, 1.);
             }
             ENDCG
         }
