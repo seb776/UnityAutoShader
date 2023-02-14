@@ -2,6 +2,7 @@ Shader "Unlit/METASHADHEUR/shader"
 {
     Properties {
 			_Sharpness("Sharpness", Float) = 1.0
+			_Off("Off", Vector) = (0,0,0,0)
 	}
     SubShader
     {
@@ -29,7 +30,7 @@ Shader "Unlit/METASHADHEUR/shader"
 			float4 _Positions[SAMPLES_COUNT];
 			float4 _Colors[SAMPLES_COUNT];
 			float _Sharpness;
-
+			float4 _Off;
             v2f vert (appdata v)
             {
                 v2f o;
@@ -208,7 +209,7 @@ acc = _min(acc, float2(length(p-_Positions[127].xyz), 127.));
 			{
 				float3 col = float3(0., 0., 0.);
 				
-				float3 ro = float3(0., -1., -5.);
+				float3 ro = float3(0., -1., -5.)+ _Off.xyz;
 				float3 ta = float3(0., 0., 0.);
 				float3 rd = normalize(ta-ro);
 				
