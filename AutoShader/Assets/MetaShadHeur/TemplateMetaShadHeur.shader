@@ -24,7 +24,7 @@
                 float4 vertex : SV_POSITION;
             };
 			float2 iSize;
-#define SAMPLES_COUNT 42
+#define SAMPLES_COUNT 128
 			float _Sizes[SAMPLES_COUNT];
 			float4 _Positions[SAMPLES_COUNT];
 			float4 _Colors[SAMPLES_COUNT];
