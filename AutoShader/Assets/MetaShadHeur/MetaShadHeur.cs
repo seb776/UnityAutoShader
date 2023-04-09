@@ -91,16 +91,10 @@ public class MetaShadHeur : AShaderGen
 
         StringBuilder sbMap = new StringBuilder(_samples.Count * 500);
 
-        int countPerLine = Mathf.RoundToInt(Mathf.Sqrt((float)_samples.Count));
         for (int i = 0; i < _samples.Count; ++i)
         {
             var pos = _samples[i].Position;
-            int idxLine = i / countPerLine;
-            int idxH = i % countPerLine;
-            float xPos = 5.0f * ((float)idxH / (float)countPerLine - 0.5f)*2.0f;
-            float yPos = 5.0f * ((float)idxLine / (float)countPerLine - 0.5f)*2.0f;
-            //var position = $"p-_Positions[{i}].xyz";
-            var position = $"p-float3({xPos}, {yPos}, _Positions[{i}].z)";
+            var position = $"p-_Positions[{i}].xyz";
             //sbMap.AppendLine($"acc = _min(acc, float2(length({position}) - _Sizes[{i}], {i}.));");
             sbMap.AppendLine($"acc = _min(acc, float2(length({position}), {i}.));");
         }
@@ -125,7 +119,7 @@ public class MetaShadHeur : AShaderGen
             float posLim = 5.0f;
             sample.Position.x = UnityEngine.Random.Range(-posLim, posLim);
             sample.Position.y = UnityEngine.Random.Range(-posLim, posLim);
-            sample.Position.z = UnityEngine.Random.Range(0.0f, posLim);
+            sample.Position.z = UnityEngine.Random.Range(-posLim, posLim);
 
             sample.Color.x = UnityEngine.Random.Range(0.0f, 1.0f);
             sample.Color.y = UnityEngine.Random.Range(0.0f, 1.0f);
@@ -159,14 +153,14 @@ public class MetaShadHeur : AShaderGen
                 sample.Color.y = c;
                 sample.Color.z = c;
 
-                sample.Color.x = UnityEngine.Random.Range(0.0f, 1.0f);
-                sample.Color.y = UnityEngine.Random.Range(0.0f, 1.0f);
-                sample.Color.z = UnityEngine.Random.Range(0.0f, 1.0f);
+                //sample.Color.x = UnityEngine.Random.Range(0.0f, 1.0f);
+                //sample.Color.y = UnityEngine.Random.Range(0.0f, 1.0f);
+                //sample.Color.z = UnityEngine.Random.Range(0.0f, 1.0f);
 
                 var col = ((Texture2D)CompareImage).GetPixel(UnityEngine.Random.RandomRange(0, ((Texture2D)CompareImage).width), UnityEngine.Random.RandomRange(0, ((Texture2D)CompareImage).height));
-                sample.Color.x = col.r;
-                sample.Color.y = col.g;
-                sample.Color.z = col.b;
+                //sample.Color.x = col.r;
+                //sample.Color.y = col.g;
+                //sample.Color.z = col.b;
 
                 //sample.Color.x = Mathf.Lerp(sample.Color.x, UnityEngine.Random.Range(0.0f, 1.0f), 0.25f);
                 //sample.Color.y = Mathf.Lerp(sample.Color.y, UnityEngine.Random.Range(0.0f, 1.0f), 0.25f);
@@ -179,10 +173,11 @@ public class MetaShadHeur : AShaderGen
 
                 sample.Position.x = UnityEngine.Random.Range(-posLim, posLim);
                 sample.Position.y = UnityEngine.Random.Range(-posLim, posLim);
-                sample.Position.z = UnityEngine.Random.Range(0.0f, posLim);
+                sample.Position.z = UnityEngine.Random.Range(-posLim, posLim);
+
             }
             if (propertyChange == 2)
-                sample.Size = Mathf.Lerp(0.1f, 2.0f, Mathf.Pow(UnityEngine.Random.Range(0.0f, 1.0f), 1.0f));// Mathf.Lerp(sample.Size, , 0.5f);
+                sample.Size = UnityEngine.Random.Range(0.1f, 2.0f);// Mathf.Lerp(sample.Size, , 0.5f);
         }
         return samples;
     }
@@ -234,13 +229,13 @@ public class MetaShadHeur : AShaderGen
     {
         if (first)
             return parentA.Select((el, i) => (i < crossPoint ? (Sample)el.Clone() : (Sample)parentB[i].Clone())).ToList();
-        return parentA.Select((el, i) => (i > crossPoint ? (Sample)el.Clone() : (Sample)parentB[i].Clone())).ToList();
+        return parentA.Select((el, i) => (i >= crossPoint ? (Sample)el.Clone() : (Sample)parentB[i].Clone())).ToList();
     }
 
     IEnumerator _coroutSimulatedGeneticAlgorithm()
     {
         List<IList<Sample>> population = new List<IList<Sample>>();
-        int populationSize = 200;
+        int populationSize = 500;
         float bestEnergy = 100000.0f;
         IList<Sample> bestSolution = null;
         for (int i = 0; i < populationSize; ++i)
@@ -267,27 +262,27 @@ public class MetaShadHeur : AShaderGen
                     bestEnergy = energy;
                 }
                 sortedByFit.Add(energy, individual);
-                yield return new WaitForEndOfFrame();
+                yield return new WaitForSeconds(0.0f);
             }
             Debug.Log("Current best " + sortedByFit.First().Key);
             List<IList<Sample>> nextPopulation = new List<IList<Sample>>();
 
             // We generated the new population
-            float coefCrossOver = 0.5f; // Chanced of cross over => the rest is mutation
+            float coefCrossOver = 0.7f; // Chanced of cross over
             float coefGoodSamples = 0.1f;
             float coefBadSamples = 0.1f;// Chances of getting a random individual (including non elite)
 
-            for (int iNew = 0; iNew < populationSize/2; ++iNew)
+            for (int iNew = 0; iNew < populationSize / 2; ++iNew)
             {
                 IList<Sample> newIndividual = null;// = new List<Sample>();
                 int maxIdx = Mathf.RoundToInt(coefGoodSamples * populationSize);
                 if (UnityEngine.Random.Range(0.0f, 1.0f) < coefBadSamples)
                     maxIdx = populationSize;
+                var parentA = population[UnityEngine.Random.Range(0, maxIdx)];
+                var parentB = population[UnityEngine.Random.Range(0, maxIdx)];
                 if (UnityEngine.Random.Range(0.0f, 1.0f) < coefCrossOver)
                 {
 
-                    var parentA = population[UnityEngine.Random.Range(0, maxIdx)];
-                    var parentB = population[UnityEngine.Random.Range(0, maxIdx)];
                     int crossPoint = UnityEngine.Random.Range(0, parentA.Count);
                     nextPopulation.Add(_crossOver(parentA, parentB, crossPoint, true));
                     nextPopulation.Add(_crossOver(parentA, parentB, crossPoint, false));
@@ -295,14 +290,11 @@ public class MetaShadHeur : AShaderGen
                 }
                 else
                 {
-
-                    var parentA = population[UnityEngine.Random.Range(0, maxIdx)];
-                    var parentB = population[UnityEngine.Random.Range(0, maxIdx)];
                     nextPopulation.Add(parentA);
                     nextPopulation.Add(parentB);
                 }
             }
-            float mutationProbability = 0.2f;
+            float mutationProbability = 0.05f;
             for (int iIndiv = 0; iIndiv < nextPopulation.Count; ++iIndiv)
             {
                 if (UnityEngine.Random.Range(0.0f, 1.0f) < mutationProbability)
@@ -310,7 +302,7 @@ public class MetaShadHeur : AShaderGen
             }
             nextPopulation[UnityEngine.Random.Range(0, nextPopulation.Count)] = bestSolution;
             population = nextPopulation;
-            yield return new WaitForEndOfFrame();
+            yield return new WaitForSeconds(0.0f);
         }
     }
     IEnumerator _coroutSimulatedAnnealing()
@@ -347,7 +339,7 @@ public class MetaShadHeur : AShaderGen
             }
 
             float deltaEnergy = curEnergy - bestEnergy;
-            if (deltaEnergy < 0.0f)// || (deltaEnergy > 0.0f && UnityEngine.Random.Range(0.0f,1.0f) < Mathf.Exp(-deltaEnergy/temperature)))
+            if (deltaEnergy < 0.0f)// || (deltaEnergy > 0.01f && UnityEngine.Random.Range(0.0f,1.0f) < Mathf.Exp(-deltaEnergy/temperature)))
             {
                 bestEnergy = curEnergy;
                 bestSolution = _samples;
@@ -362,6 +354,7 @@ public class MetaShadHeur : AShaderGen
                 //    Directory.CreateDirectory(output);
                 //SaveTexture($@"{output}\shaderFinalMETASHADHEUR.png", RenderTexture);
             }
+            if (i % 5 == 0)
                 yield return new WaitForEndOfFrame();
         }
 
